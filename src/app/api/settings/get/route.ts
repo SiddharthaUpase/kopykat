@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
-import connectDB from '@/app/lib/mongodb';
+// In files that need authOptions, update the import:
+import { authOptions } from '@/app/lib/auth';import connectDB from '@/app/lib/mongodb';
 import User from '@/app/models/User';
 
 export async function GET() {

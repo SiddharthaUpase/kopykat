@@ -1,12 +1,11 @@
-import NextAuth, { AuthOptions } from 'next-auth';
+import { AuthOptions } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
-import connectDB from '@/app/lib/mongodb';
-import User from '@/app/models/User';
+import connectDB from './mongodb';
+import User from '../models/User';
 
-// Move authOptions to a separate config file
-export const config: AuthOptions = {
+export const authOptions: AuthOptions = {
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -75,9 +74,6 @@ export const config: AuthOptions = {
       }
       return session;
     },
-    async redirect({ url, baseUrl }) {
-      return baseUrl;
-    },
   },
   pages: {
     signIn: '/login',
@@ -86,8 +82,4 @@ export const config: AuthOptions = {
   session: {
     strategy: 'jwt',
   },
-};
-
-// Create and export the route handler
-const handler = NextAuth(config);
-export { handler as GET, handler as POST }; 
+}; 
