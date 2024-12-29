@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/lib/auth';
 import User from '@/app/models/User';
 
+
 const anthropic = new Anthropic({
   apiKey: process.env.CLAUDE_API_KEY,
 });
@@ -69,6 +70,15 @@ export async function POST(req: Request) {
             - Reference Indian market dynamics
             - End with broader implications`;
             break;
+
+            case 'shashi':
+                systemPrompt += `Write with Shashi Tharoor's signature style:
+                - Use eloquent language
+                - Focus on Indian culture and history
+                - Include literary references
+                - End with a powerful conclusion
+                - Maintain a motivational tone`;
+                break;
     
         default:
             return NextResponse.json({ error: 'Unknown tone' }, { status: 400 });

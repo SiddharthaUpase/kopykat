@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import LoadingSpinner from '../components/LoadingSpinner';
 import SpeechToText from '../components/SpeechToText';
 import { Copy, FloppyDisk } from 'phosphor-react';
+import { toast } from 'react-toastify';
 
 const tonePresets = [
     { id: 'naval', name: 'Naval Ravikant', description: 'Philosophical & Concise', image: '/naval.jpg' },
@@ -12,6 +13,8 @@ const tonePresets = [
     { id: 'rahul', name: 'Rahul Subramanian', description: 'Witty & Humorous', image: '/rahul.jpeg' },
     { id: 'ankur', name: 'Ankur Warikoo', description: 'Educational & Motivational', image: '/ankur.jpeg' },
     { id: 'kunal', name: 'Kunal Shah', description: 'Sharp Insights & Frameworks', image: '/kunal.jpeg' },
+    { id: 'shashi', name: 'Shashi Tharoor', description: 'Eloquent & Articulate', image: '/shashi.jpg' },
+  
   ];
   
 
@@ -120,6 +123,7 @@ export default function GeneratePage() {
 
   const handleCopy = useCallback(() => {
     navigator.clipboard.writeText(generatedContent);
+    toast.success('Copied to clipboard!');
   }, [generatedContent]);
 
   const handleSave = async () => {
@@ -137,9 +141,13 @@ export default function GeneratePage() {
 
       if (res.ok) {
         setHasUnsavedChanges(false);
+        toast.success('Post saved successfully!');
+      } else {
+        toast.error('Failed to save post');
       }
     } catch (error) {
       console.error('Failed to save post:', error);
+      toast.error('Failed to save post');
     }
   };
 
@@ -236,7 +244,7 @@ export default function GeneratePage() {
       </div>
 
       {/* Right Panel - Output */}
-      <div className="flex-1 bg-zinc-50 p-8 rounded-lg overflow-y-auto">
+      <div className="flex-1 bg-zinc-50 p-8 rounded-lg ">
         <div className="space-y-4 max-w-xl mx-auto">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-bold text-zinc-900">Generated Post</h2>
@@ -284,10 +292,23 @@ export default function GeneratePage() {
               </p>
             </div>
           ) : (
-            <div className="p-6 border-2 border-zinc-900 rounded-lg bg-white min-h-[70vh]">
-              <p className="whitespace-pre-wrap text-zinc-800">
-                {generatedContent}
-              </p>
+            <div className="p-6 border-2 border-zinc-900 rounded-lg bg-white h-[75vh]">
+              <div className="relative h-[70vh]">
+                <textarea
+                  className="whitespace-pre-wrap text-zinc-800 w-full h-full border-none outline-none resize-none overflow-y-scroll scrollbar-visible"
+                  value={generatedContent}
+                  onChange={(e) => setGeneratedContent(e.target.value)}
+                  onScroll={(e) => {
+                    const target = e.target as HTMLTextAreaElement;
+                    const showArrow = target.scrollHeight > target.clientHeight && 
+                      target.scrollTop < target.scrollHeight - target.clientHeight;
+                    target.nextElementSibling?.classList.toggle('hidden', !showArrow);
+                  }}
+                />
+                <div className="hidden absolute bottom-1 left-1/2 transform -translate-x-1/2 text-2xl animate-bounce text-blue-500">
+                  ↓
+                </div>
+              </div>
             </div>
           )}
         </div>
