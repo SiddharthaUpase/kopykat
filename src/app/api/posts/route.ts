@@ -11,14 +11,22 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    const { content, tone } = await req.json();
+    const { content, tone, publishDate } = await req.json();
     
     await connectDB();
+    
+    console.log('Creating post with data:', {
+      userId: session.user.id,
+      content,
+      tone,
+      publishDate
+    });
     
     const post = await Post.create({
       userId: session.user.id,
       content,
       tone,
+      publishDate: new Date(publishDate),
     });
 
     return NextResponse.json({ post });

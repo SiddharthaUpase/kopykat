@@ -4,7 +4,7 @@ import { useState, useRef, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import LoadingSpinner from '../components/LoadingSpinner';
 import SpeechToText from '../components/SpeechToText';
-import { Copy, FloppyDisk } from 'phosphor-react';
+import { Copy, FloppyDisk, Calendar } from 'phosphor-react';
 import { toast } from 'react-toastify';
 
 const tonePresets = [
@@ -34,6 +34,7 @@ export default function GeneratePage() {
   const abortControllerRef = useRef<AbortController | null>(null);
   const [includeCallToAction, setIncludeCallToAction] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [publishDate, setPublishDate] = useState<string>(new Date().toISOString().split('T')[0]);
 
   const handleGenerate = async () => {
     if (hasUnsavedChanges) {
@@ -136,6 +137,7 @@ export default function GeneratePage() {
         body: JSON.stringify({
           content: generatedContent,
           tone: selectedTone,
+          publishDate: publishDate || null,
         }),
       });
 
@@ -251,6 +253,12 @@ export default function GeneratePage() {
             <div className="flex items-center gap-2">
               {generatedContent && (
                 <>
+                  <input
+                    type="date"
+                    value={publishDate}
+                    onChange={(e) => setPublishDate(e.target.value)}
+                    className="p-2 border-2 border-zinc-200 rounded-lg text-zinc-800"
+                  />
                   <button
                     onClick={handleCopy}
                     className="p-2 border-2 border-zinc-200 rounded-lg hover:bg-zinc-50 text-zinc-800 transition-colors"

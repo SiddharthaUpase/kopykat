@@ -1,6 +1,6 @@
 'use client';
 
-import { RocketLaunch, Files, Handshake } from 'phosphor-react';
+import { RocketLaunch, Files, Calendar, Handshake } from 'phosphor-react';
 
 interface SidebarProps {
   onPageChange: (page: string) => void;
@@ -10,6 +10,7 @@ interface SidebarProps {
 const menuItems = [
   { name: 'Generate Posts', id: 'generate', icon: RocketLaunch },
   { name: 'All Posts', id: 'posts', icon: Files },
+  { name: 'Content Calendar', id: 'calendar', icon: Calendar },
   { name: 'Reach Out', id: 'reachout', icon: Handshake },
 ];
 
