@@ -16,13 +16,13 @@ export async function POST(req: Request) {
     }
 
     // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create user
     await User.create({
       name,
       email,
-      password: hashedPassword,
+      password: password,
     });
 
     return new NextResponse('User registered successfully', { status: 201 });
