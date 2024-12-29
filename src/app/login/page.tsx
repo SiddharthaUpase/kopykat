@@ -29,7 +29,7 @@ export default function LoginPage() {
       if (result?.error) {
         setError(result.error);
       } else {
-        router.push('/');
+        router.push('/home');
       }
     } catch (error) {
       setError('An unexpected error occurred');
