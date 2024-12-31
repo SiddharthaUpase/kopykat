@@ -1,9 +1,8 @@
 import { AuthOptions } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import bcrypt from 'bcryptjs';
-import connectDB from './mongodb';
-import User from '../models/User';
+import connectDB from '@/app/lib/mongodb';
+import User from '@/app/models/User';
 
 export const authOptions: AuthOptions = {
   providers: [
@@ -18,52 +17,62 @@ export const authOptions: AuthOptions = {
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error('Invalid credentials');
+        try {
+          if (!credentials?.email || !credentials?.password) {
+            throw new Error('Email and password are required');
+          }
+
+          await connectDB();
+          const user = await User.findOne({ 
+            email: credentials.email.toLowerCase() 
+          });
+          
+          if (!user) {
+            console.log('No user found with email:', credentials.email);
+            throw new Error('Invalid email or password');
+          }
+
+          const isPasswordCorrect = credentials.password === user.password;
+
+          if (!isPasswordCorrect) {
+            console.log('Password incorrect for user:', credentials.email);
+            throw new Error('Invalid email or password');
+          }
+
+          return {
+            id: user._id.toString(),
+            email: user.email,
+            name: user.name || null,
+            image: user.image || null,
+          };
+        } catch (error) {
+          console.error('Authorization error:', error);
+          throw error;
         }
-
-        await connectDB();
-        
-        const user = await User.findOne({ email: credentials.email });
-        
-        if (!user || !user.password) {
-          throw new Error('Invalid credentials');
-        }
-
-        const isPasswordCorrect = await bcrypt.compare(
-          credentials.password,
-          user.password
-        );
-
-        if (!isPasswordCorrect) {
-          throw new Error('Invalid credentials');
-        }
-
-        return {
-          id: user._id,
-          email: user.email,
-          name: user.name,
-          image: user.image,
-        };
       }
     })
   ],
   callbacks: {
     async signIn({ user, account }) {
-      if (account?.provider === 'google') {
-        await connectDB();
-        const existingUser = await User.findOne({ email: user.email });
-        
-        if (!existingUser) {
-          await User.create({
-            email: user.email,
-            name: user.name,
-            image: user.image,
-            googleId: user.id,
-          });
+      try {
+        if (account?.provider === 'google') {
+          await connectDB();
+          const existingUser = await User.findOne({ email: user.email });
+          
+          if (!existingUser) {
+            await User.create({
+              email: user.email?.toLowerCase(),
+              name: user.name,
+              image: user.image,
+              googleId: user.id,
+            });
+          }
         }
+        return true;
+      } catch (error) {
+        console.error('Sign in callback error:', error);
+        return false;
       }
-      return true;
     },
     async session({ session, token }) {
       if (session.user) {
@@ -74,6 +83,9 @@ export const authOptions: AuthOptions = {
       }
       return session;
     },
+    async redirect({ url, baseUrl }) {
+      return `${baseUrl}/generate`;
+    },
   },
   pages: {
     signIn: '/login',
@@ -81,5 +93,7 @@ export const authOptions: AuthOptions = {
   },
   session: {
     strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
+  debug: process.env.NODE_ENV === 'development',
 }; 

@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Calendar from '../components/Calendar';
-import LoadingSpinner from '../components/LoadingSpinner';
+import { useRouter } from 'next/navigation';
+import Calendar from '../../components/Calendar';
+import LoadingSpinner from '../../components/LoadingSpinner';
 import { Bug, Trash } from 'phosphor-react';
 
 interface Post {
@@ -27,20 +28,18 @@ const generateDummyPosts = async () => {
   const dummyPosts = Array.from({ length: 2 }, () => {
     const futureDate = new Date();
     futureDate.setDate(futureDate.getDate() + Math.floor(Math.random() * 30));
-    // Set a random time during business hours
-    futureDate.setHours(9 + Math.floor(Math.random() * 8), // Between 9 AM and 5 PM
-                       Math.floor(Math.random() * 60), // Random minute
-                       0, 0); // Reset seconds and milliseconds
+    futureDate.setHours(9 + Math.floor(Math.random() * 8),
+                       Math.floor(Math.random() * 60),
+                       0, 0);
 
     return {
       content: dummyContents[Math.floor(Math.random() * dummyContents.length)],
       tone: tones[Math.floor(Math.random() * tones.length)],
-      publishDate: futureDate.toISOString(), // Ensure proper ISO string format
+      publishDate: futureDate.toISOString(),
     };
   });
 
   try {
-    // Add console.log for debugging
     console.log('Generating dummy posts:', dummyPosts);
 
     for (const post of dummyPosts) {
@@ -87,7 +86,8 @@ const cleanupDummyPosts = async () => {
   }
 };
 
-export default function CalendarPage({ onPageChange }: { onPageChange: (page: string) => void }) {
+export default function CalendarPage() {
+  const router = useRouter();
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isGeneratingDummy, setIsGeneratingDummy] = useState(false);
@@ -151,10 +151,8 @@ export default function CalendarPage({ onPageChange }: { onPageChange: (page: st
 
   const handlePostClick = (postId: string) => {
     console.log('Calendar: Post clicked:', postId);
-    // Store the ID first
     localStorage.setItem('selectedPostId', postId);
-    // Then change the page
-    onPageChange('posts');
+    router.push('/posts');
   };
 
   if (isLoading) {
@@ -177,7 +175,7 @@ export default function CalendarPage({ onPageChange }: { onPageChange: (page: st
               className="flex items-center gap-2 px-4 py-2 border-2 border-black text-sm bg-red-50 hover:bg-red-100 transition-colors text-red-500"
               title="Cleanup dummy posts"
             >
-                <Trash size={20} />
+              <Trash size={20} />
               {isCleaning ? 'Cleaning...' : 'Cleanup Posts'}
             </button>
             <button
@@ -191,9 +189,9 @@ export default function CalendarPage({ onPageChange }: { onPageChange: (page: st
             </button>
           </div>
         )} */}
-      <p className="text-zinc-700">
-        Drag and drop posts to reschedule posts on the calendar.
-      </p>
+        <p className="text-zinc-700">
+          Drag and drop posts to reschedule posts on the calendar.
+        </p>
       </div>
       <Calendar 
         posts={posts} 

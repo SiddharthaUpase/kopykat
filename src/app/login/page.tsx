@@ -30,7 +30,7 @@ export default function LoginPage() {
       if (result?.error) {
         setError(result.error);
       } else {
-        router.push('/home');
+        router.push('/generate');
       }
     } catch (error) {
       setError('An unexpected error occurred');
@@ -42,7 +42,7 @@ export default function LoginPage() {
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
     try {
-      await signIn('google', { callbackUrl: '/home' });
+      await signIn('google', { callbackUrl: '/generate' });
     } catch (error) {
       setError('Failed to sign in with Google');
     } finally {

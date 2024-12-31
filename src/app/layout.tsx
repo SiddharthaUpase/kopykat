@@ -15,7 +15,8 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <AuthProvider>
-        <ToastContainer 
+          {children}
+          <ToastContainer 
             position="bottom-right"
             autoClose={3000}
             hideProgressBar={false}
@@ -27,8 +28,6 @@ export default function RootLayout({
             pauseOnHover
             theme="light"
           />
-          {children}
-          
         </AuthProvider>
       </body>
     </html>
