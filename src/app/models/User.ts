@@ -1,32 +1,20 @@
 import mongoose from 'mongoose';
 
-const UserSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: [true, 'Please provide a name'],
-  },
+const userSchema = new mongoose.Schema({
+  name: String,
   email: {
     type: String,
-    required: [true, 'Please provide an email'],
+    required: true,
     unique: true,
   },
-  password: {
-    type: String,
+  password: String,  // Optional for Google auth users
+  image: String,
+  googleId: String,  // Add this field
+  createdAt: {
+    type: Date,
+    default: Date.now,
   },
-  image: {
-    type: String,
-  },
-  googleId: {
-    type: String,
-  },
-  callToAction: {
-    type: String,
-    default: '',
-  }
-}, {
-  timestamps: true,
-  collection: 'users'
 });
 
-const User = mongoose.models.User || mongoose.model('User', UserSchema);
+const User = mongoose.models.User || mongoose.model('User', userSchema);
 export default User; 

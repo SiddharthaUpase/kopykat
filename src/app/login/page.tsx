@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { FcGoogle } from 'react-icons/fc';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -41,10 +42,11 @@ export default function LoginPage() {
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
     try {
-      await signIn('google', { callbackUrl: '/' });
+      await signIn('google', { callbackUrl: '/home' });
     } catch (error) {
-      setIsGoogleLoading(false);
       setError('Failed to sign in with Google');
+    } finally {
+      setIsGoogleLoading(false);
     }
   };
 
@@ -99,18 +101,21 @@ export default function LoginPage() {
               )}
             </button>
             
-            {/* <button
+            <button
               type="button"
               onClick={handleGoogleSignIn}
-              className="w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
+              className="w-full flex items-center justify-center gap-2 py-2 px-4 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
               disabled={isLoading || isGoogleLoading}
             >
               {isGoogleLoading ? (
                 <LoadingSpinner />
               ) : (
-                'Sign in with Google'
+                <>
+                  <FcGoogle className="w-5 h-5" />
+                  <span>Continue with Google</span>
+                </>
               )}
-            </button> */}
+            </button>
           </div>
         </form>
         <div className="text-center">

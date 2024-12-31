@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { signIn } from 'next-auth/react';
+import { FcGoogle } from 'react-icons/fc';
 
 export default function RegisterPage() {
   const [name, setName] = useState('');
@@ -11,6 +13,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -41,6 +44,17 @@ export default function RegisterPage() {
       setError(error.message);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSignUp = async () => {
+    setIsGoogleLoading(true);
+    try {
+      await signIn('google', { callbackUrl: '/home' });
+    } catch (error) {
+      setError('Failed to sign up with Google');
+    } finally {
+      setIsGoogleLoading(false);
     }
   };
 
@@ -93,11 +107,11 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          <div>
+          <div className="flex flex-col gap-4">
             <button
               type="submit"
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
-              disabled={isLoading}
+              disabled={isLoading || isGoogleLoading}
             >
               {isLoading ? (
                 <LoadingSpinner />
@@ -105,12 +119,38 @@ export default function RegisterPage() {
                 'Sign up'
               )}
             </button>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">Or continue with</span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleGoogleSignUp}
+              className="w-full flex items-center justify-center gap-2 py-2 px-4 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+              disabled={isLoading || isGoogleLoading}
+            >
+              {isGoogleLoading ? (
+                <LoadingSpinner />
+              ) : (
+                <>
+                  <FcGoogle className="w-5 h-5" />
+                  <span>Sign up with Google</span>
+                </>
+              )}
+            </button>
           </div>
         </form>
+
         <div className="text-center">
           <Link 
             href="/login" 
-            className={`text-blue-600 hover:text-blue-500 ${isLoading ? 'pointer-events-none opacity-50' : ''}`}
+            className={`text-blue-600 hover:text-blue-500 ${(isLoading || isGoogleLoading) ? 'pointer-events-none opacity-50' : ''}`}
           >
             Already have an account? Sign in
           </Link>
