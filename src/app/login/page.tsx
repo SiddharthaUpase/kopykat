@@ -118,14 +118,14 @@ export default function LoginPage() {
             </button>
           </div>
         </form>
-        <div className="text-center">
+        {/* <div className="text-center">
           <Link 
             href="/register" 
             className={`text-blue-600 hover:text-blue-500 ${(isLoading || isGoogleLoading) ? 'pointer-events-none opacity-50' : ''}`}
           >
             Don't have an account? Sign up
           </Link>
-        </div>
+        </div> */}
       </div>
     </div>
   );
