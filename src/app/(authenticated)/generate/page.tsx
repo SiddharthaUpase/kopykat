@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import SpeechToText from '../../components/SpeechToText';
-import { Copy, FloppyDisk } from 'phosphor-react';
+import { Copy, FloppyDisk, Warning } from 'phosphor-react';
 import { toast } from 'react-toastify';
 
 // Keep the tonePresets array from the original file
@@ -34,6 +34,7 @@ export default function GeneratePage() {
     const [includeCallToAction, setIncludeCallToAction] = useState(false);
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
     const [publishDate, setPublishDate] = useState<string>(new Date().toISOString().split('T')[0]);
+    const [rateLimitError, setRateLimitError] = useState<string | null>(null);
   
     const handleGenerate = async () => {
       if (hasUnsavedChanges) {
@@ -48,6 +49,7 @@ export default function GeneratePage() {
       }
       
       setIsGenerating(true);
+      setRateLimitError(null); // Clear any previous rate limit errors
       
       // Cancel previous request if exists
       if (abortControllerRef.current) {
@@ -70,6 +72,12 @@ export default function GeneratePage() {
           }),
           signal: abortControllerRef.current.signal,
         });
+  
+        // Check for rate limit error
+        if (response.status === 429) {
+          setRateLimitError('Rate limit exceeded. Try again tomorrow.');
+          return; // Exit the function if rate limit is reached
+        }
   
         if (!response.ok) throw new Error('Generation failed');
         
@@ -160,6 +168,16 @@ export default function GeneratePage() {
             <h1 className="text-4xl font-bold text-zinc-900">Generate LinkedIn Post</h1>
             <p className="text-zinc-700">Transform your ideas into engaging LinkedIn content</p>
   
+            {rateLimitError && (
+              <div className="flex items-center gap-3 p-4 bg-red-50 border-2 border-red-500 rounded-lg text-red-700 shadow-md">
+                <Warning size={24} weight="bold" className="text-red-500" />
+                <div>
+                  <p className="font-semibold">{rateLimitError}</p>
+                  <p className="text-sm text-red-600 mt-1">Free tier allows 10 generations per day.</p>
+                </div>
+              </div>
+            )}
+
             <div className="space-y-6">
               <label className="block">
                 <div className="flex items-center justify-between mb-2">
@@ -322,12 +340,4 @@ export default function GeneratePage() {
         </div>
       </div>
     );
-  
-  
-  
-  
-  
-  
-  
-  
   }

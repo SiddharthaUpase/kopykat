@@ -5,18 +5,22 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
 const AuthGuard = ({ children }: { children: React.ReactNode }) => {
-  const { status } = useSession();
+  const { data: session, status } = useSession();
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
     if (status === 'loading') return;
 
-    // Allow only the maintenance page
-    if (pathname !== '/maintenance') {
-      router.push('/maintenance');
+    const isAuthRoute = pathname.startsWith('/(authenticated)') || pathname === '/generate' || pathname === '/posts' || pathname === '/calendar';
+    const isAuthPage = pathname === '/login' || pathname === '/register';
+
+    if (!session && isAuthRoute) {
+      router.push('/login');
+    } else if (session && isAuthPage) {
+      router.push('/generate');
     }
-  }, [status, pathname, router]);
+  }, [session, status, pathname, router]);
 
   return <>{children}</>;
 };

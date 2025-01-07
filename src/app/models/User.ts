@@ -14,6 +14,10 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  registrationIP: {
+    type: String,
+    required: true,
+  }
 });
 
 const User = mongoose.models.User || mongoose.model('User', userSchema);

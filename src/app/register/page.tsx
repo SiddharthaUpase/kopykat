@@ -6,6 +6,8 @@ import Link from 'next/link';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { signIn } from 'next-auth/react';
 import { FcGoogle } from 'react-icons/fc';
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
+import axios from 'axios';
 
 export default function RegisterPage() {
   const [name, setName] = useState('');
@@ -15,13 +17,72 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const router = useRouter();
+  const { executeRecaptcha } = useGoogleReCaptcha();
+  const [nameError, setNameError] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+
+  const validateName = (value: string) => {
+    if (value.length < 2 || value.length > 50) {
+      setNameError('Name must be between 2 and 50 characters');
+      return false;
+    }
+    setNameError('');
+    return true;
+  };
+
+  const validateEmail = (value: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(value)) {
+      setEmailError('Please enter a valid email address');
+      return false;
+    }
+    setEmailError('');
+    return true;
+  };
+
+  const validatePassword = (value: string) => {
+    if (value.length < 8) {
+      setPasswordError('Password must be at least 8 characters');
+      return false;
+    }
+    setPasswordError('');
+    return true;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    
+    const isNameValid = validateName(name);
+    const isEmailValid = validateEmail(email);
+    const isPasswordValid = validatePassword(password);
+    
+    if (!isNameValid || !isEmailValid || !isPasswordValid) {
+      return;
+    }
+    
     setIsLoading(true);
     
     try {
+      if (!executeRecaptcha) {
+        setError('Failed to execute reCAPTCHA');
+        setIsLoading(false);
+        return;
+      }
+
+      const recaptchaToken = await executeRecaptcha('register');
+      
+      const recaptchaResponse = await axios.post('/api/recaptcha', {
+        gRecaptchaToken: recaptchaToken
+      });
+
+      if (!recaptchaResponse.data.success || recaptchaResponse.data.score < 0.5) {
+        throw new Error('reCAPTCHA verification failed');
+      }
+
+      console.log(recaptchaResponse.data);
+
       const res = await fetch('/api/register', {
         method: 'POST',
         headers: {
@@ -76,35 +137,76 @@ export default function RegisterPage() {
               <input
                 type="text"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 text-black placeholder-gray-500 rounded-t-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${
+                  nameError ? 'border-red-500' : 'border-gray-300'
+                } text-black placeholder-gray-500 rounded-t-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm`}
                 placeholder="Full Name"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  validateName(e.target.value);
+                }}
                 disabled={isLoading}
               />
+              {nameError && (
+                <p className="text-red-500 text-xs mt-1">{nameError}</p>
+              )}
             </div>
+            
             <div>
               <input
                 type="email"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${
+                  emailError ? 'border-red-500' : 'border-gray-300'
+                } text-black placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm`}
                 placeholder="Email address"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  validateEmail(e.target.value);
+                }}
                 disabled={isLoading}
               />
+              {emailError && (
+                <p className="text-red-500 text-xs mt-1">{emailError}</p>
+              )}
             </div>
+            
             <div>
               <input
                 type="password"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 text-black placeholder-gray-500 rounded-b-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${
+                  passwordError ? 'border-red-500' : 'border-gray-300'
+                } text-black placeholder-gray-500 rounded-b-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm`}
                 placeholder="Password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  validatePassword(e.target.value);
+                }}
                 disabled={isLoading}
               />
+              {passwordError && (
+                <p className="text-red-500 text-xs mt-1">{passwordError}</p>
+              )}
             </div>
+          </div>
+
+          <div className="text-sm text-gray-600 space-y-2">
+            <h3 className="font-medium">Requirements:</h3>
+            <ul className="list-disc pl-5 space-y-1">
+              <li className={`${name.length >= 2 && name.length <= 50 ? 'text-green-600' : ''}`}>
+                Name must be between 2 and 50 characters
+              </li>
+              <li className={`${/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? 'text-green-600' : ''}`}>
+                Valid email address required
+              </li>
+              <li className={`${password.length >= 8 ? 'text-green-600' : ''}`}>
+                Password must be at least 8 characters
+              </li>
+            </ul>
           </div>
 
           <div className="flex flex-col gap-4">

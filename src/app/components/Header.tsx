@@ -77,79 +77,78 @@ export default function Header() {
     <header className="h-16 border-b-2 border-black bg-white flex items-center justify-between px-6">
       <div className="flex items-center space-x-4">
         <div className="flex items-center">
-          <span className="text-2xl font-bold text-blue-600">😽 KopyKat</span>
-          <span className="ml-2 text-xs text-linkedin-gray-200">by 
-            <a 
-              href="https://www.linkedin.com/in/siddhartha-upase-a6963617a/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="ml-1 text-linkedin-blue hover:underline"
-            >
-              Siddhartha Upase
-            </a>
+        {session?.user?.name && (
+          <span className="text-sm text-gray-600">
+            Hi, <span className="font-bold text-gray-900 text-lg">{session.user.name.charAt(0).toUpperCase() + session.user.name.slice(1)}</span>!
           </span>
+        )}
+          
         </div>
       </div>
-      
-      <div className="relative" ref={settingsRef}>
-        <button
-          onClick={() => setIsSettingsOpen(!isSettingsOpen)}
-          className="p-2 border-2 border-zinc-200 rounded-lg hover:bg-zinc-50 text-zinc-800 transition-colors"
-        >
-          <Gear size={24} weight="bold" />
-        </button>
 
-        {isSettingsOpen && (
-          <div className="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-lg border-2 border-zinc-200 overflow-hidden">
-            {isSettingCTA ? (
-              <div className="p-4 space-y-4">
-                <h3 className="font-bold text-zinc-800">Set Default Call to Action</h3>
-                <textarea
-                  className="w-full p-2 border-2 border-zinc-200 rounded-lg text-zinc-800 text-sm"
-                  placeholder="Enter your default call to action..."
-                  value={callToAction}
-                  onChange={(e) => setCallToAction(e.target.value)}
-                  rows={3}
-                />
-                {message && (
-                  <p className={`text-sm ${message.includes('Error') ? 'text-red-500' : 'text-green-500'}`}>
-                    {message}
-                  </p>
-                )}
-                <div className="flex gap-2">
+      <div className="flex items-center gap-4">
+        
+        
+        <div className="relative" ref={settingsRef}>
+          <button
+            onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+            className="p-2 border-2 border-zinc-200 rounded-lg hover:bg-zinc-50 text-zinc-800 transition-colors"
+          >
+            <Gear size={24} weight="bold" />
+          </button>
+
+          {isSettingsOpen && (
+            <div className="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-lg border-2 border-zinc-200 overflow-hidden">
+              {isSettingCTA ? (
+                <div className="p-4 space-y-4">
+                  <h3 className="font-bold text-zinc-800">Set Default Call to Action</h3>
+                  <textarea
+                    className="w-full p-2 border-2 border-zinc-200 rounded-lg text-zinc-800 text-sm"
+                    placeholder="Enter your default call to action..."
+                    value={callToAction}
+                    onChange={(e) => setCallToAction(e.target.value)}
+                    rows={3}
+                  />
+                  {message && (
+                    <p className={`text-sm ${message.includes('Error') ? 'text-red-500' : 'text-green-500'}`}>
+                      {message}
+                    </p>
+                  )}
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setIsSettingCTA(false)}
+                      className="flex-1 px-3 py-2 text-sm border-2 border-zinc-200 rounded-lg hover:bg-zinc-50"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleSaveCTA}
+                      disabled={isSaving}
+                      className="flex-1 px-3 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                    >
+                      {isSaving ? <LoadingSpinner /> : 'Save'}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="py-1">
                   <button
-                    onClick={() => setIsSettingCTA(false)}
-                    className="flex-1 px-3 py-2 text-sm border-2 border-zinc-200 rounded-lg hover:bg-zinc-50"
+                    onClick={() => setIsSettingCTA(true)}
+                    className="w-full px-4 py-2 text-left text-zinc-800 hover:bg-zinc-50"
                   >
-                    Cancel
+                    Set Default Call to Action
                   </button>
                   <button
-                    onClick={handleSaveCTA}
-                    disabled={isSaving}
-                    className="flex-1 px-3 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                    onClick={() => signOut()}
+                    className="w-full px-4 py-2 text-left text-zinc-800 hover:bg-zinc-50"
                   >
-                    {isSaving ? <LoadingSpinner /> : 'Save'}
+                    Logout
                   </button>
                 </div>
-              </div>
-            ) : (
-              <div className="py-1">
-                <button
-                  onClick={() => setIsSettingCTA(true)}
-                  className="w-full px-4 py-2 text-left text-zinc-800 hover:bg-zinc-50"
-                >
-                  Set Default Call to Action
-                </button>
-                <button
-                  onClick={() => signOut()}
-                  className="w-full px-4 py-2 text-left text-zinc-800 hover:bg-zinc-50"
-                >
-                  Logout
-                </button>
-              </div>
-            )}
-          </div>
-        )}
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );

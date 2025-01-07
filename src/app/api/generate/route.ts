@@ -3,14 +3,44 @@ import { Anthropic } from '@anthropic-ai/sdk';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/lib/auth';
 import User from '@/app/models/User';
+import { Redis } from '@upstash/redis';
 
 
 const anthropic = new Anthropic({
   apiKey: process.env.CLAUDE_API_KEY,
 });
 
+// Initialize Redis client
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL!,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+});
+
+const RATE_LIMIT = 10; // requests per day
+const RATE_LIMIT_PERIOD = 24 * 60 * 60; // 24 hours in seconds
+
 export async function POST(req: Request) {
   try {
+    // Get IP address from request
+    const ip = req.headers.get('x-forwarded-for') || 'unknown';
+    const rateKey = `rate_limit:${ip}`;
+
+    // Check rate limit
+    const currentCount = Number(await redis.get(rateKey)) || 0;
+    if (currentCount >= RATE_LIMIT) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded. Try again tomorrow.' },
+        { status: 429 }
+      );
+    }
+
+    // Increment counter and set expiry if it's the first request
+    if (currentCount === 0) {
+      await redis.setex(rateKey, RATE_LIMIT_PERIOD, 1);
+    } else {
+      await redis.incr(rateKey);
+    }
+
     const { content, tone, includeCallToAction } = await req.json();
     const session = await getServerSession(authOptions);
     
