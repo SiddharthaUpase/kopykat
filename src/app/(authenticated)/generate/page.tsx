@@ -244,7 +244,7 @@ export default function GeneratePage() {
           <div className="space-y-4 max-w-xl mx-auto">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold text-zinc-900">Generated Post</h2>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 mb-10">
                 {generatedContent && (
                   <>
                     <input
