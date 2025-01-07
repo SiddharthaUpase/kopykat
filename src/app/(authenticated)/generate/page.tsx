@@ -10,19 +10,10 @@ import { toast } from 'react-toastify';
 // Keep the tonePresets array from the original file
 const tonePresets = [
   { id: 'naval', name: 'Naval Ravikant', description: 'Philosophical & Concise', image: '/naval.jpg' },
-  { id: 'paras', name: 'Paras Chopra', description: 'Analytical & Strategic', image: '/paras.jpg' },
-  { id: 'rahul', name: 'Rahul Subramanian', description: 'Witty & Humorous', image: '/rahul.jpeg' },
-  { id: 'ankur', name: 'Ankur Warikoo', description: 'Educational & Motivational', image: '/ankur.jpeg' },
-  { id: 'kunal', name: 'Kunal Shah', description: 'Sharp Insights & Frameworks', image: '/kunal.jpeg' },
-  { id: 'shashi', name: 'Shashi Tharoor', description: 'Eloquent & Articulate', image: '/shashi.jpg' },
+  { id: 'steve', name: 'Steve Jobs', description: 'Visionary & Passionate', image: '/steve.jpg' },
+  { id: 'elon', name: 'Elon Musk', description: 'Technical & Bold', image: '/elon.jpeg' },
+  { id: 'paul', name: 'Paul Graham', description: 'Analytical & Insightful', image: '/paul.jpg' },
 ];
-
-const customTones = [
-  { id: 'funny', name: 'Funny', description: 'Humorous & Light' },
-  { id: 'persuasive', name: 'Persuasive', description: 'Convincing & Strong' },
-  { id: 'formal', name: 'Formal', description: 'Professional & Serious' },
-];
-
 
 export default function GeneratePage() {
     const { data: session } = useSession();
@@ -224,20 +215,6 @@ export default function GeneratePage() {
                       </button>
                     ))}
                   </div>
-                </div>
-  
-                <div className="flex flex-wrap gap-2">
-                  {customTones.map((tone) => (
-                    <button
-                      key={tone.id}
-                      onClick={() => setSelectedTone(tone.id)}
-                      className={`p-2 border-2 border-zinc-900 rounded-lg text-left hover:bg-zinc-100 transition-colors ${
-                        selectedTone === tone.id ? 'bg-zinc-900 text-white hover:bg-zinc-800' : 'text-zinc-800'
-                      }`}
-                    >
-                      {tone.name}
-                    </button>
-                  ))}
                 </div>
   
                 <label className="flex items-center gap-2">

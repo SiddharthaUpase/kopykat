@@ -79,7 +79,7 @@ export default function Header() {
         <div className="flex items-center">
         {session?.user?.name && (
           <span className="text-sm text-gray-600">
-            Hi, <span className="font-bold text-gray-900 text-lg">{session.user.name.charAt(0).toUpperCase() + session.user.name.slice(1)}</span>!
+            Hi, <span className="font-bold text-gray-900 text-lg">{session.user.name.charAt(0).toUpperCase() + session.user.name.slice(1)}!</span>
           </span>
         )}
           
