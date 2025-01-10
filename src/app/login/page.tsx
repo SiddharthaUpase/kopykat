@@ -13,23 +13,12 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   const router = useRouter();
-
-  const handleRecaptchaChange = (token: string | null) => {
-    setRecaptchaToken(token);
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
-    
-    if (!recaptchaToken) {
-      setError('Please complete the reCAPTCHA');
-      setIsLoading(false);
-      return;
-    }
 
     try {
       const result = await signIn('credentials', {
@@ -98,7 +87,6 @@ export default function LoginPage() {
               />
             </div>
           </div>
-
 
           <div className="flex flex-col gap-4">
             <button

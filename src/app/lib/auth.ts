@@ -3,7 +3,8 @@ import GoogleProvider from 'next-auth/providers/google';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import connectDB from '@/app/lib/mongodb';
 import User from '@/app/models/User';
-
+import { headers } from 'next/headers';
+import bcrypt from 'bcryptjs';
 export const authOptions: AuthOptions = {
   providers: [
     GoogleProvider({
@@ -26,13 +27,16 @@ export const authOptions: AuthOptions = {
           const user = await User.findOne({ 
             email: credentials.email.toLowerCase() 
           });
+
+          //decrypt password
+          const decryptedPassword = await bcrypt.compare(credentials.password, user.password);
           
           if (!user) {
             console.log('No user found with email:', credentials.email);
             throw new Error('Invalid email or password');
           }
 
-          const isPasswordCorrect = credentials.password === user.password;
+          const isPasswordCorrect = decryptedPassword;
 
           if (!isPasswordCorrect) {
             console.log('Password incorrect for user:', credentials.email);
@@ -60,11 +64,16 @@ export const authOptions: AuthOptions = {
           const existingUser = await User.findOne({ email: user.email });
           
           if (!existingUser) {
+            const headersList = await headers(); // Await the promise to get the headers
+            const forwardedFor = headersList.get('x-forwarded-for');
+            const clientIP = forwardedFor ? forwardedFor.split(',')[0] : '0.0.0.0';
+
             await User.create({
               email: user.email?.toLowerCase(),
               name: user.name,
               image: user.image,
               googleId: user.id,
+              registrationIP: clientIP,
             });
           }
         }
