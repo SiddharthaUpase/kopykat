@@ -42,8 +42,8 @@ export default function RegisterPage() {
   };
 
   const validatePassword = (value: string) => {
-    if (value.length < 8) {
-      setPasswordError('Password must be at least 8 characters');
+    if (value.length < 5) {
+      setPasswordError('Password must be at least 5 characters');
       return false;
     }
     setPasswordError('');
@@ -96,7 +96,17 @@ export default function RegisterPage() {
       });
 
       if (res.ok) {
-        router.push('/login');
+        const result = await signIn('credentials', {
+          email,
+          password,
+          redirect: false,
+        });
+
+        if (result?.error) {
+          throw new Error(result.error);
+        }
+
+        router.push('/generate');
       } else {
         const error = await res.text();
         throw new Error(error);
@@ -203,8 +213,8 @@ export default function RegisterPage() {
               <li className={`${/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? 'text-green-600' : ''}`}>
                 Valid email address required
               </li>
-              <li className={`${password.length >= 8 ? 'text-green-600' : ''}`}>
-                Password must be at least 8 characters
+              <li className={`${password.length >= 5 ? 'text-green-600' : ''}`}>
+                Password must be at least 5 characters
               </li>
             </ul>
           </div>
