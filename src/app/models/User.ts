@@ -10,20 +10,41 @@ const userSchema = new mongoose.Schema({
   email: {
     type: String,
     required: [true, 'Email is required'],
-    unique: true
+    unique: true,
+    lowercase: true
   },
   password: {
     type: String,
-    required: [true, 'Password is required']
+    required: function(this: { accountType?: string }) {
+      return this.accountType === 'credentials';
+    }
   },
+  googleId: {
+    type: String,
+    sparse: true
+  },
+  image: String,
   registrationIP: {
     type: String,
-    required: [true, 'Registration IP is required']
+    required: function(this: { accountType?: string }) {
+      return this.accountType === 'credentials';
+    }
   },
   registrationDate: {
     type: Date,
     default: Date.now
+  },
+  lastLogin: {
+    type: Date,
+    default: Date.now
+  },
+  accountType: {
+    type: String,
+    enum: ['credentials', 'google'],
+    required: true
   }
 });
+
+userSchema.index({ googleId: 1 }, { sparse: true });
 
 export default mongoose.models.User || mongoose.model('User', userSchema); 

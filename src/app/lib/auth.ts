@@ -5,11 +5,21 @@ import connectDB from '@/app/lib/mongodb';
 import User from '@/app/models/User';
 import { headers } from 'next/headers';
 import bcrypt from 'bcryptjs';
+
 export const authOptions: AuthOptions = {
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      profile(profile) {
+        return {
+          id: profile.sub,
+          name: profile.name,
+          email: profile.email,
+          image: profile.picture,
+          accountType: 'google'
+        };
+      },
     }),
     CredentialsProvider({
       name: 'Credentials',
@@ -57,25 +67,47 @@ export const authOptions: AuthOptions = {
     })
   ],
   callbacks: {
-    async signIn({ user, account }) {
+    async signIn({ user, account, profile }) {
       try {
+        await connectDB();
+        
         if (account?.provider === 'google') {
-          await connectDB();
-          const existingUser = await User.findOne({ email: user.email });
-          
-          if (!existingUser) {
-            const headersList = await headers(); // Await the promise to get the headers
-            const forwardedFor = headersList.get('x-forwarded-for');
-            const clientIP = forwardedFor ? forwardedFor.split(',')[0] : '0.0.0.0';
+          const headersList = await headers();
+          const forwardedFor = headersList.get('x-forwarded-for');
+          const clientIP = forwardedFor ? forwardedFor.split(',')[0] : '0.0.0.0';
 
-            await User.create({
+          // Try to find user by email or googleId
+          let existingUser = await User.findOne({
+            $or: [
+              { email: user.email?.toLowerCase() },
+              { googleId: profile?.sub }
+            ]
+          });
+
+          if (existingUser) {
+            // Update existing user's Google ID if they didn't have one
+            if (!existingUser.googleId) {
+              existingUser.googleId = profile?.sub;
+              existingUser.image = user.image;
+              existingUser.accountType = 'google';
+              existingUser.lastLogin = new Date();
+              await existingUser.save();
+            }
+          } else {
+            // Create new user with required fields
+            existingUser = await User.create({
               email: user.email?.toLowerCase(),
-              name: user.name,
+              name: user.name || 'Unknown',
               image: user.image,
-              googleId: user.id,
+              googleId: profile?.sub,
               registrationIP: clientIP,
+              accountType: 'google',
+              lastLogin: new Date()
             });
           }
+
+          // Add the database user id to the user object
+          user.id = existingUser._id.toString();
         }
         return true;
       } catch (error) {
